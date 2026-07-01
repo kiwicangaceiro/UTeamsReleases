@@ -1,0 +1,4 @@
+*.deb
+*.AppImage
+*.asc
+SHA256SUMS*
