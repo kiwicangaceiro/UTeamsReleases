@@ -39,7 +39,7 @@ malware-injected build cannot produce a valid signature from the official key.
 Every release includes `SHA256SUMS.txt` and a detached GPG signature `SHA256SUMS.txt.asc`.
 
 ```bash
-gpg --recv-keys <FINGERPRINT-FROM-BENTOSOFT-NET>   # once; fingerprint published on bentosoft.net
+curl -s https://github.com/kiwicangaceiro.gpg | gpg --import   # once; the author's public key
 gpg --verify SHA256SUMS.txt.asc SHA256SUMS.txt     # expect: Good signature
 sha256sum -c SHA256SUMS.txt                          # expect: OK
 ```
