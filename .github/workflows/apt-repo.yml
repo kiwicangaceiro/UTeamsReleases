@@ -27,10 +27,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          tag="$(gh release view --json tagName --jq .tagName)"
           mkdir -p debs
-          for tag in $(gh release list --json tagName --jq '.[].tagName'); do
-            gh release download "$tag" --pattern '*.deb' --dir debs || true
-          done
+          gh release download "$tag" --pattern '*.deb' --dir debs
           ls -la debs
 
       - name: Import signing key
