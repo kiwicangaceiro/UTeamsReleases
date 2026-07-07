@@ -44,7 +44,6 @@ jobs:
       - name: Build signed apt repository
         env:
           APT_LABEL: ${{ github.event.repository.name }}
-          APT_GPG_PASSPHRASE: ${{ secrets.APT_GPG_PASSPHRASE }}
         run: |
           chmod +x scripts/build-apt-repo.sh
           bash scripts/build-apt-repo.sh debs public/apt "$APT_KEY_ID"
