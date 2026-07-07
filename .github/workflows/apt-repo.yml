@@ -1,0 +1,55 @@
+name: APT repository
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: apt-repo
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download latest release debs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="$(gh release view --json tagName --jq .tagName)"
+          mkdir -p debs
+          gh release download "$tag" --pattern '*.deb' --dir debs
+          ls -la debs
+
+      - name: Import signing key
+        run: |
+          printf '%s' "${{ secrets.APT_GPG_PRIVATE_KEY }}" | gpg --batch --import
+          keyid="$(gpg --list-secret-keys --with-colons | awk -F: '/^sec:/{print $5; exit}')"
+          echo "APT_KEY_ID=$keyid" >> "$GITHUB_ENV"
+
+      - name: Build signed apt repository
+        env:
+          APT_LABEL: ${{ github.event.repository.name }}
+        run: |
+          chmod +x scripts/build-apt-repo.sh
+          bash scripts/build-apt-repo.sh debs public/apt "$APT_KEY_ID"
+          gpg --armor --export "$APT_KEY_ID" > public/apt/pubkey.gpg
+          printf '<!doctype html><meta charset=utf-8><title>apt</title><p>Bentosoft apt repository. See <a href="apt/">apt/</a>.\n' > public/index.html
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+      - id: deploy
+        uses: actions/deploy-pages@v4
