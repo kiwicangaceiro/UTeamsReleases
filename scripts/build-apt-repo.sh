@@ -31,7 +31,11 @@ apt-ftparchive \
   -o "APT::FTPArchive::Release::Components=$COMPONENT" \
   -o "APT::FTPArchive::Release::Architectures=${ARCHES[*]}" \
   release "dists/$SUITE" >"dists/$SUITE/Release"
-gpg --batch --yes --default-key "$GPG_KEY_ID" -abs -o "dists/$SUITE/Release.gpg" "dists/$SUITE/Release"
-gpg --batch --yes --default-key "$GPG_KEY_ID" --clearsign -o "dists/$SUITE/InRelease" "dists/$SUITE/Release"
+GPG_SIGN=(gpg --batch --yes --pinentry-mode loopback --default-key "$GPG_KEY_ID")
+if [ -n "${APT_GPG_PASSPHRASE:-}" ]; then
+  GPG_SIGN+=(--passphrase "$APT_GPG_PASSPHRASE")
+fi
+"${GPG_SIGN[@]}" -abs -o "dists/$SUITE/Release.gpg" "dists/$SUITE/Release"
+"${GPG_SIGN[@]}" --clearsign -o "dists/$SUITE/InRelease" "dists/$SUITE/Release"
 popd >/dev/null
 echo "Built signed apt repo in $OUT_DIR (key $GPG_KEY_ID)"

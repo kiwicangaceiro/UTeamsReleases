@@ -35,12 +35,16 @@ jobs:
       - name: Import signing key
         run: |
           printf '%s' "${{ secrets.APT_GPG_PRIVATE_KEY }}" | gpg --batch --import
+          mkdir -p ~/.gnupg && chmod 700 ~/.gnupg
+          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+          gpgconf --reload gpg-agent || true
           keyid="$(gpg --list-secret-keys --with-colons | awk -F: '/^sec:/{print $5; exit}')"
           echo "APT_KEY_ID=$keyid" >> "$GITHUB_ENV"
 
       - name: Build signed apt repository
         env:
           APT_LABEL: ${{ github.event.repository.name }}
+          APT_GPG_PASSPHRASE: ${{ secrets.APT_GPG_PASSPHRASE }}
         run: |
           chmod +x scripts/build-apt-repo.sh
           bash scripts/build-apt-repo.sh debs public/apt "$APT_KEY_ID"
