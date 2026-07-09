@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: friday
+      time: "00:00"
+      timezone: Pacific/Auckland
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
