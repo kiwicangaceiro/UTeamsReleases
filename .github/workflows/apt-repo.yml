@@ -51,7 +51,7 @@ jobs:
           printf '<!doctype html><meta charset=utf-8><title>apt</title><p>Bentosoft apt repository. See <a href="apt/">apt/</a>.\n' > public/index.html
 
       - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: public
       - id: deploy
